@@ -1,0 +1,30 @@
+# Node/Frontend
+node_modules/
+build/
+.env
+
+# Java/Backend
+target/
+*.class
+*.jar
+*.war
+.mvn/
+mvnw
+mvnw.cmd
+.idea/
+*.iml
+*.project
+*.classpath
+*.settings/
+
+# Python/AI Monitor
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.pytest_cache/
+
+# OS/System
+.DS_Store
+Thumbs.db

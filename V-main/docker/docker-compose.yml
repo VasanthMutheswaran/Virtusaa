@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: proctoring_db
+    environment:
+      POSTGRES_DB: proctoring_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../docs/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - proctoring_net
+
+  backend:
+    build: ../backend
+    container_name: proctoring_backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/proctoring_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
+      JWT_SECRET: mySecretKey_AI_Proctoring_2024_SuperSecure
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - proctoring_net
+
+  ai-monitor:
+    build: ../ai-monitor
+    container_name: proctoring_ai
+    ports:
+      - "5000:5000"
+    networks:
+      - proctoring_net
+
+  frontend:
+    build: ../frontend
+    container_name: proctoring_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - proctoring_net
+
+networks:
+  proctoring_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
