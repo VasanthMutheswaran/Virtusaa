@@ -1,0 +1,61 @@
+# Java (Backend)
+target/
+*.class
+*.jar
+*.war
+*.ear
+.project
+.classpath
+.settings/
+.idea/
+*.iml
+
+# Node / React (Frontend)
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (AI Monitor)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.env
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+.gemini/
+antigravity/
+brain/
