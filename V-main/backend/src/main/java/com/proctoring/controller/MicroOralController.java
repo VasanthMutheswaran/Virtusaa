@@ -31,8 +31,13 @@ public class MicroOralController {
     }
 
     @GetMapping("/admin/submissions/{sessionId}")
-    public ResponseEntity<List<MicroOralSubmission>> getSubmissions(@PathVariable Long sessionId) {
-        List<MicroOralSubmission> submissions = oralService.getSubmissionsBySession(sessionId);
-        return ResponseEntity.ok(submissions);
+    public ResponseEntity<?> getSubmissions(@PathVariable("sessionId") String sessionIdStr) {
+        try {
+            Long sessionId = Long.parseLong(sessionIdStr);
+            List<MicroOralSubmission> submissions = oralService.getSubmissionsBySession(sessionId);
+            return ResponseEntity.ok(submissions);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("Invalid sessionId format: " + sessionIdStr);
+        }
     }
 }

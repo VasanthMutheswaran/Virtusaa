@@ -24,8 +24,7 @@ export const useConnectivity = () => {
 
             const endpoints = [
                 'https://www.google.com/favicon.ico',
-                'https://www.cloudflare.com/favicon.ico',
-                'https://8.8.8.8' // Ping-like check
+                'https://www.cloudflare.com/favicon.ico'
             ];
 
             const start = Date.now();

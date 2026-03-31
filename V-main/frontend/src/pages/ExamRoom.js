@@ -35,7 +35,7 @@ export default function ExamRoom() {
   const [mcqClarityQuestions, setMcqClarityQuestions] = useState([]);
   const [activeMcqClarityIdx, setActiveMcqClarityIdx] = useState(-1);
   const [isGeneratingClarity, setIsGeneratingClarity] = useState(false);
-  const { isOnline, status: netStatus } = useConnectivity();
+  const { isOnline, status: netStatus, latency } = useConnectivity();
   const [showConnOverlay, setShowConnOverlay] = useState(false);
   const connTimerRef = useRef(null);
 
@@ -204,11 +204,11 @@ export default function ExamRoom() {
 
   // Connectivity monitoring
   useEffect(() => {
-    if (!isOnline || netStatus === 'Poor') {
+    if (!isOnline) {
       if (!connTimerRef.current) {
         connTimerRef.current = setTimeout(() => {
           setShowConnOverlay(true);
-        }, 15000); // Show overlay after 15 seconds of poor/offline status
+        }, 15000); // Show overlay after 15 seconds of offline status
       }
     } else {
       if (connTimerRef.current) {
@@ -370,12 +370,12 @@ export default function ExamRoom() {
       const oralQuestions = await Promise.all(selected.map(async (q, i) => {
         try {
           const correctText = getCorrectOptionText(q);
-          const res = await aiService.generateClarity({ 
-            context: q.question, 
+          const res = await aiService.generateClarity({
+            context: q.question,
             correctAnswer: correctText,
-            type: 'mcq' 
+            type: 'mcq'
           });
-          
+
           return {
             id: 500 + i,
             questionText: res.data.question,
@@ -522,9 +522,11 @@ export default function ExamRoom() {
               <span className="tabular-nums">{formatTime(timeLeft)}</span>
             </div>
             <div className="w-px h-4 bg-slate-300" />
-            <div className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-lg border border-green-100">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Excellent — 183ms avg</span>
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-lg border transition-all ${netStatus === 'Excellent' ? 'bg-green-50 border-green-100' : netStatus === 'Good' ? 'bg-blue-50 border-blue-100' : 'bg-amber-50 border-amber-100'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${netStatus === 'Excellent' ? 'bg-green-500' : netStatus === 'Good' ? 'bg-blue-500' : 'bg-amber-500'}`} />
+              <span className={`text-[10px] font-black uppercase tracking-widest ${netStatus === 'Excellent' ? 'text-green-600' : netStatus === 'Good' ? 'text-blue-600' : 'text-amber-600'}`}>
+                {netStatus} — {latency}ms
+              </span>
             </div>
           </div>
         </div>
@@ -809,9 +811,9 @@ export default function ExamRoom() {
           {/* Section 1: Camera Feed */}
           <div className="p-6 border-b border-slate-100">
             {isStarted && (
-              <ProctoringMonitor 
-                sessionId={parseInt(sessionId)} 
-                onViolation={handleViolation} 
+              <ProctoringMonitor
+                sessionId={parseInt(sessionId)}
+                onViolation={handleViolation}
                 submitting={submitting}
               />
             )}
@@ -984,8 +986,8 @@ export default function ExamRoom() {
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Security Alert</h2>
-              <p className="text-blue-600 text-sm leading-relaxed font-bold">
+              <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Security Alert</h2>
+              <p className="text-red-600 text-sm leading-relaxed font-bold">
                 Exiting full-screen is a serious proctoring violation.
                 Your activity has been flagged. Return to full-screen mode immediately to prevent automatic disqualification.
               </p>
@@ -1014,8 +1016,8 @@ export default function ExamRoom() {
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Connection Lost</h2>
-              <p className="text-blue-600 text-sm leading-relaxed font-bold">
+              <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter">Connection Lost</h2>
+              <p className="text-slate-600 text-sm leading-relaxed font-bold">
                 Your internet connection has become unstable.
                 Exam activity is paused to prevent data loss.
                 Please stabilize your connection to resume the session.
@@ -1025,7 +1027,7 @@ export default function ExamRoom() {
             <div className="bg-blue-50/50 border border-slate-200 rounded-2xl p-6">
               <div className="flex items-center justify-center gap-4">
                 <div className="w-3 h-3 rounded-full bg-red-500 animate-ping" />
-                <span className="text-xs font-black text-white uppercase tracking-[0.2em]">Retrying secure link...</span>
+                <span className="text-xs font-black text-slate-800 uppercase tracking-[0.2em]">Retrying secure link...</span>
               </div>
             </div>
 

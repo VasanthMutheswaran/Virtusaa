@@ -37,9 +37,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/candidate/exam/**").permitAll()
+                        .requestMatchers("/api/oral/submit").permitAll()
                         .requestMatchers("/api/debug/**").permitAll()
                         .requestMatchers("/ws/**").permitAll() // WebSocket handshake
-                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "HR")
+                        .requestMatchers("/api/admin/**", "/api/oral/admin/**").hasAnyRole("ADMIN", "HR")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

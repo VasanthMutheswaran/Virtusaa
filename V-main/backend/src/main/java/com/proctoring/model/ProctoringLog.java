@@ -1,3 +1,9 @@
+/**
+ * @project AI-Powered Proctoring & Automated Assessment System
+ * @version Virtusa Jatayu Season 5 - Stage 2 (POC)
+ * @description Domain entity representing a proctoring violation log.
+ * @author <YOUR_TEAM_NAME>
+ */
 package com.proctoring.model;
 
 import jakarta.persistence.*;

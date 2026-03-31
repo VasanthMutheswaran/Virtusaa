@@ -1,6 +1,9 @@
 """
-AI Proctoring Monitor Service
-Advanced detection: Phone, Phone-in-hand, Phone-near-face, Bottle, Talking
+@project: AI-Powered Proctoring & Automated Assessment System
+@version: Virtusa Jatayu Season 5 - Stage 2 (POC)
+@description: AI Monitor Service handling real-time computer vision (MediaPipe/YOLOv8) 
+              and generative AI (Google Gemini) for candidate behavior analysis and question generation.
+@author: <YOUR_TEAM_NAME>
 """
 
 from flask import Flask, request, jsonify
@@ -472,9 +475,9 @@ def generate():
 
         text = text[:10000]
 
-        # Use gemini-1.5-flash for reliability and lower quota usage
+        # Use gemini-2.0-flash for reliability and availability
         model = genai.GenerativeModel(
-            "models/gemini-1.5-flash",
+            "models/gemini-2.0-flash",
             generation_config={"response_mime_type": "application/json"}
         )
 
@@ -538,7 +541,12 @@ def generate():
     except Exception as e:
         logger.error(f"Generation error: {e}")
         # Always return the requested number of questions even on failure
-        fallback = generate_fallback_questions(count, target_type, "MEDIUM", "the provided text")
+        # Fix: ensure count is integer and use gen_type instead of undefined target_type
+        try:
+            icount = int(count)
+        except:
+            icount = 5
+        fallback = generate_fallback_questions(icount, gen_type, difficulty, "the provided text")
         return jsonify(fallback)
 
 
@@ -561,7 +569,7 @@ def suggest():
              raise Exception("Gemini API Key is not configured")
 
         model = genai.GenerativeModel(
-            "models/gemini-1.5-flash",
+            "models/gemini-2.0-flash",
             generation_config={"response_mime_type": "application/json", "temperature": 0.8}
         )
         
@@ -733,14 +741,15 @@ def analyze():
 
     try:
 
+        # Base image decoding from Base64 string sent by the frontend
         image = decode_image(data["image"])
 
         violations = []
 
+        # Step 1: Detect presence of face and count people in frame
         face_result = face_detector.detect(image)
 
         if face_result["face_count"] == 0:
-
             violations.append({
                 "type":"NO_FACE",
                 "severity":"HIGH",
@@ -748,19 +757,18 @@ def analyze():
             })
 
         elif face_result["face_count"] > 1:
-
             violations.append({
                 "type":"MULTIPLE_FACES",
                 "severity":"HIGH",
                 "description":"Multiple people detected"
             })
 
+        # Step 2: If Exactly one face, perform Gaze and Talking analysis
         if face_result["face_count"] == 1:
 
             mesh_analysis = analyze_face_mesh(image)
 
             if mesh_analysis["talking"]:
-
                 violations.append({
                     "type":"TALKING_DETECTED",
                     "severity":"MEDIUM",
@@ -768,24 +776,21 @@ def analyze():
                 })
 
             if mesh_analysis["looking_away"]:
-
                 violations.append({
                     "type":"LOOKING_AWAY",
                     "severity":"MEDIUM",
-                    "description":"Candidate looking away"
+                    "description":"Candidate looking away from screen"
                 })
 
+        # Step 3: Use YOLOv8 to detect forbidden objects (mobiles, etc.)
         object_results = detect_objects(image,face_result)
 
         violations.extend(object_results)
 
-
         return jsonify({
-
             "violations":violations,
             "face_count":face_result.get("face_count",0),
             "analysis_complete":True
-
         })
 
 

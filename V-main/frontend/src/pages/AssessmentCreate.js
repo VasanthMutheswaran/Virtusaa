@@ -1,3 +1,10 @@
+/**
+ * @project AI-Powered Proctoring & Automated Assessment System
+ * @version Virtusa Jatayu Season 5 - Stage 2 (POC)
+ * @description Frontend component for creating assessments, featuring 
+ *              integrated AI question generation and suggestion systems.
+ * @author <YOUR_TEAM_NAME>
+ */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../components/Admin/AdminLayout';
@@ -30,9 +37,8 @@ export default function AssessmentCreate() {
 
   // New suggestion modal state
   const [showSuggestModal, setShowSuggestModal] = useState(false);
-  const [activeSuggestionType, setActiveSuggestionType] = useState('quiz'); // 'quiz' or 'coding' or 'sql'
+  const [activeSuggestionType, setActiveSuggestionType] = useState('quiz'); // 'quiz' or 'coding'
   const [suggestConfig, setSuggestConfig] = useState({ count: 5, topic: '', difficulty: 'MEDIUM' });
-  const [sqlQuestions, setSqlQuestions] = useState([]);
 
   const blobToBase64 = (blob) => {
     return new Promise((resolve, reject) => {
@@ -368,36 +374,6 @@ export default function AssessmentCreate() {
           onAdd={addSuggestedQuestion}
         />
 
-        {/* SQL Questions (UI-only for now as per design) */}
-        <div className="card !p-8 opacity-70">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-3 tracking-tight">
-              <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><Cpu size={20} /></div>
-              SQL Questions <span className="text-slate-400 font-medium text-sm ml-1">(0)</span>
-            </h2>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 h-10">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mr-2">Count:</span>
-                <input type="number" value="3" disabled className="w-8 bg-transparent text-xs font-bold text-slate-400 focus:outline-none" />
-              </div>
-              <div className="h-10 border-l border-slate-200 mx-1" />
-              <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 h-10">
-                <select disabled className="bg-transparent text-xs font-bold text-slate-400 focus:outline-none cursor-pointer">
-                  <option>MEDIUM</option>
-                </select>
-              </div>
-              <button disabled className="btn-secondary !h-10 !py-0 !px-4 !text-xs border-slate-200 text-slate-400 cursor-not-allowed flex items-center gap-2">
-                <Wand2 size={14} /> Suggest
-              </button>
-              <button disabled className="btn-secondary !h-10 !py-0 !px-4 !text-xs whitespace-nowrap bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed">
-                <Plus size={14} /> Add SQL Question
-              </button>
-            </div>
-          </div>
-          <div className="text-center py-10 text-slate-300 border-2 border-dashed border-slate-100 rounded-lg">
-            <p className="text-xs font-medium italic">SQL Question type is currently coming soon...</p>
-          </div>
-        </div>
         <div className="card !p-8">
           <h2 className="text-lg font-bold text-slate-900 mb-6 tracking-tight">Assessment Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -718,7 +694,7 @@ const SuggestionModal = ({ show, onClose, type, config, setConfig, fetching, onF
             </div>
             <div>
               <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-                AI {type === 'quiz' ? 'MCQ' : type === 'coding' ? 'Coding' : 'SQL'} Suggestions
+                AI {type === 'quiz' ? 'MCQ' : 'Coding'} Suggestions
               </h3>
               <p className="text-xs font-medium text-slate-500 mt-0.5">Brainstorm unique questions for your assessment</p>
             </div>

@@ -1,3 +1,10 @@
+/**
+ * @project AI-Powered Proctoring & Automated Assessment System
+ * @version Virtusa Jatayu Season 5 - Stage 2 (POC)
+ * @description Service handles result calculation, penalty logic based on 
+ *              proctoring violations, and automated candidate notifications.
+ * @author <YOUR_TEAM_NAME>
+ */
 package com.proctoring.service;
 
 import com.proctoring.dto.ProctoringLogDTO;
@@ -35,19 +42,29 @@ public class ResultService {
 
     public List<ResultDTO> getResultsByAssessment(Long assessmentId) {
         List<ResultDTO> completedResults = resultRepository.findAll().stream()
-                .filter(r -> r.getSession() != null && r.getSession().getAssessmentCandidate() != null && r.getSession().getAssessmentCandidate().getAssessment().getId().equals(assessmentId))
+                .filter(r -> r.getSession() != null && r.getSession().getAssessmentCandidate() != null
+                        && r.getSession().getAssessmentCandidate().getAssessment().getId().equals(assessmentId))
                 .map(r -> {
-                    try { return mapToDTO(r); } catch (Exception e) { return null; }
+                    try {
+                        return mapToDTO(r);
+                    } catch (Exception e) {
+                        return null;
+                    }
                 })
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
 
         List<ResultDTO> activeSessions = examSessionRepository
                 .findByStatus(com.proctoring.model.ExamSession.SessionStatus.IN_PROGRESS).stream()
-                .filter(s -> s.getAssessmentCandidate() != null && s.getAssessmentCandidate().getAssessment().getId().equals(assessmentId))
+                .filter(s -> s.getAssessmentCandidate() != null
+                        && s.getAssessmentCandidate().getAssessment().getId().equals(assessmentId))
                 .filter(s -> resultRepository.findBySessionId(s.getId()).isEmpty())
                 .map(s -> {
-                    try { return mapSessionToDTO(s); } catch (Exception e) { return null; }
+                    try {
+                        return mapSessionToDTO(s);
+                    } catch (Exception e) {
+                        return null;
+                    }
                 })
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
@@ -59,7 +76,11 @@ public class ResultService {
     public List<ResultDTO> getAllResults() {
         List<ResultDTO> completedResults = resultRepository.findAll().stream()
                 .map(r -> {
-                    try { return mapToDTO(r); } catch (Exception e) { return null; }
+                    try {
+                        return mapToDTO(r);
+                    } catch (Exception e) {
+                        return null;
+                    }
                 })
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toCollection(java.util.ArrayList::new));
@@ -68,7 +89,11 @@ public class ResultService {
                 .findByStatus(com.proctoring.model.ExamSession.SessionStatus.IN_PROGRESS).stream()
                 .filter(s -> resultRepository.findBySessionId(s.getId()).isEmpty())
                 .map(s -> {
-                    try { return mapSessionToDTO(s); } catch (Exception e) { return null; }
+                    try {
+                        return mapSessionToDTO(s);
+                    } catch (Exception e) {
+                        return null;
+                    }
                 })
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
@@ -144,7 +169,18 @@ public class ResultService {
         dto.setQuizTotal(r.getQuizTotal());
         dto.setCodingScore(r.getCodingScore());
         dto.setCodingTotal(r.getCodingTotal());
+
+        int oralScore = r.getOralScore();
+        int oralTotal = r.getOralTotal();
+        // Fix for existing results with inflated scores (0-100 scale instead of 0-10)
+        if (oralTotal > 0 && oralScore > oralTotal) {
+            oralScore = (int) Math.round(oralScore * 0.1);
+        }
+
+        dto.setOralScore(oralScore);
+        dto.setOralTotal(oralTotal);
         dto.setTotalScore(r.getTotalScore());
+        // Populate violation counts for detailed HR reporting
         dto.setViolationCount(r.getViolationCount());
         dto.setTabSwitchCount(r.getTabSwitchCount());
         dto.setPhoneCount(r.getPhoneCount());

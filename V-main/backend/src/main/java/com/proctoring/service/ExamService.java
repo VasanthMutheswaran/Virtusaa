@@ -1,3 +1,10 @@
+/**
+ * @project AI-Powered Proctoring & Automated Assessment System
+ * @version Virtusa Jatayu Season 5 - Stage 2 (POC)
+ * @description Core service handles examination lifecycle, coding submissions, 
+ *              quiz evaluations, and real-time proctoring log integration.
+ * @author <YOUR_TEAM_NAME>
+ */
 package com.proctoring.service;
 
 import com.proctoring.dto.*;
@@ -97,15 +104,19 @@ public class ExamService {
                 }
 
                 Assessment a = ac.getAssessment();
+                // Initialize Exam DTO with session and assessment details
                 ExamDTO dto = new ExamDTO();
                 dto.setSessionId(session.getId());
                 dto.setAssessmentTitle(a.getTitle());
                 dto.setDurationMinutes(a.getDurationMinutes());
                 dto.setCandidateName(ac.getCandidate().getName());
 
+                // Load all associated coding questions for this assessment
                 List<CodingQuestionDTO> codingQuestions = codingQuestionRepository.findByAssessmentId(a.getId())
                                 .stream()
                                 .map(this::mapToCodingDTO).collect(Collectors.toList());
+
+                // Load all associated quiz/MCQ questions
                 List<QuizQuestionDTO> quizQuestions = quizQuestionRepository.findByAssessmentId(a.getId()).stream()
                                 .map(this::mapToQuizDTO).collect(Collectors.toList());
 
@@ -145,13 +156,15 @@ public class ExamService {
 
                 if (testCases.isEmpty()) {
                         logger.warn("No test cases found for question {}. Running code once for feedback.", q.getId());
-                        // Execute once with no input to give candidate feedback
+                        // Execute once with no input to provide candidate feedback if no test cases are
+                        // defined
                         CompilerService.CompilerResult res = compilerService.executeCode(
                                         dto.getSourceCode(), dto.getLanguage(), "", "");
                         finalVerdict = res.verdict();
                         finalOutput = res.output();
                         finalError = res.error();
                 } else {
+                        // Iteratively execute each test case against the submission
                         for (TestCase tc : testCases) {
                                 logger.debug("Running test case - Input: {}, Expected: {}", tc.getInput(),
                                                 tc.getExpectedOutput());
@@ -161,8 +174,7 @@ public class ExamService {
                                 logger.info("Test case result - Verdict: {}, Output: {}, Error: {}", res.verdict(),
                                                 res.output(), res.error());
 
-                                // Capture output/error from the first failing test case or the first one if all
-                                // pass
+                                // Store the output/error of the first failing case for reporting
                                 if (finalOutput.isEmpty() && !res.output().isEmpty())
                                         finalOutput = res.output();
                                 if (finalError.isEmpty() && !res.error().isEmpty())
@@ -171,8 +183,8 @@ public class ExamService {
                                 if ("ACCEPTED".equals(res.verdict())) {
                                         passed++;
                                 } else {
+                                        // Update final verdict if any test case fails
                                         finalVerdict = res.verdict();
-                                        // On failure, prioritize this failure's output/error
                                         finalOutput = res.output();
                                         finalError = res.error();
                                 }
@@ -283,10 +295,26 @@ public class ExamService {
                 int movement = (int) logs.stream().filter(l -> "SUSPICIOUS_MOVEMENT".equals(l.getViolationType()))
                                 .count();
 
-                // Oral Scoring
+                // Oral Scoring - Group by question to avoid duplicates and normalize to 10
+                // marks per question
                 List<MicroOralSubmission> oralSubmissions = microOralSubmissionRepository.findBySessionId(sessionId);
-                int oralScore = oralSubmissions.stream().mapToInt(s -> s.getScore() != null ? s.getScore() : 0).sum();
-                int oralTotal = oralSubmissions.size() * 10; // Assuming 10 marks per oral question
+                Map<Long, Integer> bestOralScores = oralSubmissions.stream()
+                                .filter(s -> s.getQuestion() != null)
+                                .collect(Collectors.groupingBy(
+                                                s -> s.getQuestion().getId(),
+                                                Collectors.mapping(
+                                                                s -> s.getScore() != null ? s.getScore() : 0,
+                                                                Collectors.maxBy(Integer::compare))))
+                                .entrySet().stream()
+                                .collect(Collectors.toMap(
+                                                Map.Entry::getKey,
+                                                e -> e.getValue().orElse(0)));
+
+                int oralScore = bestOralScores.values().stream()
+                                .mapToInt(score -> (int) Math.round(score * 0.1)) // Assuming AI score is 0-100,
+                                                                                  // normalize to 10 marks
+                                .sum();
+                int oralTotal = bestOralScores.size() * 10;
                 if (oralTotal == 0)
                         oralTotal = 50; // Default total if none
 

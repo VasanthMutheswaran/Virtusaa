@@ -21,7 +21,7 @@ export default function ResultsDashboard() {
     adminAPI.getResults(assessmentId)
       .then(({ data }) => {
         const processed = data.map(res => {
-          const totalEarned = (res.quizScore || 0) + (res.codingScore || 0) + (res.sqlScore || 0);
+          const totalEarned = (res.quizScore || 0) + (res.codingScore || 0);
           const rawScore = totalEarned + (res.oralScore || 0);
           const totalMax = (res.quizTotal || 0) + (res.codingTotal || 0) + (res.oralTotal || 50);
 
@@ -40,14 +40,20 @@ export default function ResultsDashboard() {
   }, [assessmentId]);
 
   const showOralDetails = async (sessionId) => {
+    if (!sessionId) {
+      toast.error('Session ID is missing for this result');
+      return;
+    }
     setSelectedSession(sessionId);
     setShowOralModal(true);
     setOralLoading(true);
     try {
       const { data } = await examAPI.getOralSubmissions(sessionId);
       setOralSubmissions(data || []);
-    } catch {
-      toast.error('Failed to load oral reports');
+    } catch (error) {
+      console.error('Failed to load oral submissions:', error);
+      const errorMsg = error.response?.data || error.response?.status || error.message;
+      toast.error(`Failed to load oral reports: ${errorMsg}`);
     } finally {
       setOralLoading(false);
     }
@@ -65,7 +71,7 @@ export default function ResultsDashboard() {
 
   const handleDeleteResult = async (sessionId, name) => {
     if (!window.confirm(`Are you sure you want to delete ${name}'s assessment result? This action cannot be undone.`)) return;
-    
+
     try {
       await adminAPI.deleteResult(sessionId);
       toast.success('Result deleted successfully');
@@ -124,7 +130,7 @@ export default function ResultsDashboard() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50">
-                  {['Candidate Info', 'Quiz', 'Coding', 'SQL', 'Oral', 'Penalty', 'Final Score', 'Verdict', 'Actions'].map(h => (
+                  {['Candidate Info', 'Quiz', 'Coding', 'Oral', 'Penalty', 'Final Score', 'Verdict', 'Actions'].map(h => (
                     <th key={h} className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-border-light">{h}</th>
                   ))}
                 </tr>
@@ -147,12 +153,11 @@ export default function ResultsDashboard() {
                     </td>
                     <td className="px-8 py-5 text-slate-500 font-bold text-xs">{r.quizScore}/{r.quizTotal}</td>
                     <td className="px-8 py-5 text-slate-500 font-bold text-xs">{r.codingScore}/{r.codingTotal}</td>
-                    <td className="px-8 py-5 text-slate-500 font-bold text-xs">{r.sqlScore || 0}/50</td>
                     <td className="px-8 py-5 text-slate-500 font-bold text-xs">{r.oralScore || 0}/50</td>
                     <td className="px-8 py-5">
-                       <span className={`text-[10px] font-bold ${r.penaltyFactor < 0.8 ? 'text-red-500' : 'text-emerald-500'}`}>
+                      <span className={`text-[10px] font-bold ${r.penaltyFactor < 0.8 ? 'text-red-500' : 'text-emerald-500'}`}>
                         {(r.penaltyFactor * 100).toFixed(0)}%
-                       </span>
+                      </span>
                     </td>
                     <td className="px-8 py-5 font-bold text-slate-900 text-sm">{r.finalScoreMarks} / {r.totalMax}</td>
                     <td className="px-8 py-5">
@@ -212,7 +217,7 @@ export default function ResultsDashboard() {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30">
               {oralLoading ? (
                 <div className="flex justify-center items-center py-20">
@@ -228,13 +233,13 @@ export default function ResultsDashboard() {
                   {oralSubmissions.map((sub, idx) => (
                     <div key={idx} className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6">
                       <div className="flex items-center justify-between">
-                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-blue-100">
-                           {sub.question?.topic || 'General Clarity'}
-                         </div>
-                         <div className="flex items-center gap-2">
-                           <span className="bg-rose-50 text-rose-600 px-3 py-1 rounded-lg text-[10px] font-black tracking-widest border border-rose-100 uppercase">AI SCORE: {sub.score}%</span>
-                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Difficulty: Medium</span>
-                         </div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-blue-100">
+                          {sub.question?.topic || 'General Clarity'}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-rose-50 text-rose-600 px-3 py-1 rounded-lg text-[10px] font-black tracking-widest border border-rose-100 uppercase">AI SCORE: {sub.score}%</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Difficulty: Medium</span>
+                        </div>
                       </div>
 
                       <div className="space-y-2">

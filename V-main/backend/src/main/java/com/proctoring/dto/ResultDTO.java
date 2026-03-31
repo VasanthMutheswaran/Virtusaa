@@ -26,6 +26,8 @@ public class ResultDTO {
     private int lookingAwayCount;
     private int suspiciousMovementCount;
     private int personMismatchCount;
+    private int oralScore;
+    private int oralTotal;
     private String referencePhoto;
     private String verdict;
     private LocalDateTime generatedAt;
@@ -213,6 +215,22 @@ public class ResultDTO {
 
     public void setPersonMismatchCount(int personMismatchCount) {
         this.personMismatchCount = personMismatchCount;
+    }
+
+    public int getOralScore() {
+        return oralScore;
+    }
+
+    public void setOralScore(int oralScore) {
+        this.oralScore = oralScore;
+    }
+
+    public int getOralTotal() {
+        return oralTotal;
+    }
+
+    public void setOralTotal(int oralTotal) {
+        this.oralTotal = oralTotal;
     }
 
     public String getReferencePhoto() {
