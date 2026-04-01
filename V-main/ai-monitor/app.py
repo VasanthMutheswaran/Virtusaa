@@ -60,8 +60,8 @@ CORS(app)
 # GEMINI CONFIG
 # -----------------------------
 
-# Use .env key as priority, fallback to provided key if env is missing
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AIzaSyBG4nkCMPo6cZtzVixVi3IOLVf1700XW5E"
+# Use .env key as priority
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     logger.warning("GEMINI_API_KEY not found. Gemini features will fail.")
 else:
