@@ -1,10 +1,10 @@
-# AI-Powered Proctoring & Automated Assessment System (Project ILLUSION)
+# AI-Powered Proctoring & Automated Assessment System (Team ILLUSION)
 
 [![Event](https://img.shields.io/badge/Event-Jatayu--Season--5-blue)]
 [![Status](https://img.shields.io/badge/Status-POC--Stage--2-brightgreen)](https://github.com/VasanthMutheswaran/AI-Proctoring-System)
 
 ## 📌 Project Overview
-**Project ILLUSION** is a high-performance proctoring and assessment platform developed for the **Jatayu Season 5 hackathon**. It utilizes advanced computer vision (MediaPipe/YOLOv8) and generative AI (Google Gemini API) to provide a secure, automated, and human-like exam monitoring experience.
+**Project ILLUSION** is a high-performance proctoring and assessment platform developed by **Team Illusion** for the **Jatayu Season 5 hackathon**. It utilizes advanced computer vision (MediaPipe/YOLOv8) and generative AI (Google Gemini API) to provide a secure, automated, and human-like exam monitoring experience.
 
 ## ✨ Key Features
 - **AI Proctoring Service**: Real-time analysis of candidate behavior, including gaze tracking, multi-face detection, and prohibited object recognition (mobiles, etc.).
